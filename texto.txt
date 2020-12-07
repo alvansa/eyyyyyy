@@ -1,1 +1,9 @@
 este es un texto para saber que estoy haciendo
+
+
+#include <iostream>
+#include <string>
+#include<fstream>
+#include<locale.h>
+
+#define M 30
