@@ -17,19 +17,18 @@ struct libroaux{
 	int pag1; // Cantidad de paginas del libro
 	string genero1; // Genero del libro
 	int premios_ganados1; //Cantidad de premios ganados
-	libroaux *sig_libro1; // Puntero del siguiente libro
 };
 
-
-struct nodoaux{
-	string autor1; // Nombre del autor
-	int a_n1; // Año de nacimiento
-	int a_m1; // Año de fallecimiento (en caso de seguir vivo  poner 0).
-	string libro_destacado1; // Nombre de su libro mas destacado.
+struct nodoaux
+{
+	string autor1;
+	int a_n1;
+	int a_m1;
+	string libro_destacado1;
 	int libros_a1;
-	nodoaux *sig1; // Puntero al siguiente autor
-	libroaux *sub1; // Puntero a los libros del autor. 
 };
+
+
 
 
 struct libro{
@@ -47,7 +46,7 @@ struct nodo{
 	int a_m; // Año de fallecimiento (en caso de seguir vivo  poner 0).
 	string libro_destacado; // Nombre de su libro mas destacado.
 	int libros_a;
-	nodo *sig; // Puntero al siguiente autor
+	nodo *sig; // Puntero al siguiente auto
 	libro *sub; // Puntero a los libros del autor. 
 };
 
@@ -57,15 +56,15 @@ class lista{
 	public:
 		lista();
 		~lista();
-		void i_autor(string autor,int a_n,int a_m,string libro_destacado,int libros_a); // Ingresar autor a la lista  -xxx
+		void i_autor(string autor,int a_n,int a_m,string libro_destacado,int libros_a,libro *h_sub); // Ingresar autor a la lista  -xxx
 		void e_autor(string autor); // Eliminar autor de la lista -xx-
-		void i_libro(string n_libro,int a_estreno,int pag, string genero,int p_ganados); // Ingresar un libro a la lista -xx-
 		void e_libro(string autor,string n_libro); // Eliminar un libro de la lista -xx-
 		void m_autores(); // mostrar a todos los autores -xx-
 		void m_libros(string autor); // Mostrar todos los libros de un autor y el mismo autor. -xx-
 };
 void salida_a(nodo *q);
 void salida_l(libro *q);
+libro *i_libro(string n_libro,int a_estreno,int pag, string genero,int p_ganados,libro *h_sub); // Ingresar un libro a la lista -xx-
 
 
 lista::lista(){
@@ -77,13 +76,14 @@ lista::~lista(){
 
 }
 
-void lista::i_autor(string autor,int a_n,int a_m,string libro_destacado,int libros_a){
+void lista::i_autor(string autor,int a_n,int a_m,string libro_destacado,int libros_a,libro *h_sub){
 	nodo *q,* r;
-	q->autor=autor;
+	q = new nodo;
+	q->autor = autor;
 	q->a_n = a_n;
 	q->a_m = a_m;
 	q->libro_destacado=libro_destacado; 
-	q->libros_a = libros_a;
+	q-> sub = h_sub;
 	q->sig = h;
 	if(!h)
 		h = q;
@@ -106,19 +106,18 @@ void lista::e_autor(string autor){
 
 }
 
-void lista::i_libro(string n_libro,int a_estreno,int pag, string genero,int p_ganados){
+libro *i_libro(string n_libro,int a_estreno,int pag, string genero,int p_ganados,libro *h_sub){
 //Ingreso de los libros como sub lista comprobando si pertenecen al autor
-	libro *q,* r;
-	nodo *c;
-	q->nombre_libro=n_libro;
+	libro *q,*r;
+	q = new libro;
+	q ->nombre_libro = n_libro;
 	q->a_estreno = a_estreno;
 	q->pag = pag;
-	q->genero=genero; 
+	q->genero = genero;
 	q->premios_ganados = p_ganados;
-	q->sig_libro = q;
-	c->sub = q;
-	if(h->sub)
-		h->sub = q;
+
+	if(h_sub /*&& h_sub.a_estreno > p.a_estreno*/)
+		h_sub = q;
 	else
 	{
 		r = q;
@@ -130,6 +129,7 @@ void lista::i_libro(string n_libro,int a_estreno,int pag, string genero,int p_ga
 		r->sig_libro = q;
 		q->sig_libro = NULL;
 	}
+	return h_sub;
 }
 
 
@@ -182,7 +182,7 @@ void lista::m_libros(string autor){
 				arch.write((char *)(&x),sizeof(nodoaux));
 		cout<<"---------------------------------------------"<<endl;
 		j++;
-		 while(i < x.libros_a1){
+		 for( i = 0 ; i < x.libros_a1; i++){
 			cout<<"Ingrese el nombre del libro del autor: ";
 			getline(cin,y.nombre_libro1, '\n');
 			getline(cin,y.nombre_libro1, '\n');
@@ -197,7 +197,6 @@ void lista::m_libros(string autor){
 			cin>>y.premios_ganados1;
 			if(y.premios_ganados1 != -1)
 				arch.write((char *)(&y),sizeof(libroaux));
-			i++;
 			cout<<"---------------------------------------------"<<endl;
 	}
  }
@@ -209,19 +208,20 @@ void lectura(){
 	lista L;
 	nodoaux x;
 	libroaux y;
+	libro *h_sub;
 	ifstream arch_lee;
-	int cant,ch;
+	int ch;
 	string autor;
 	arch_lee.open("libros.txt");
 	while(!arch_lee.eof()){
 		arch_lee.read((char *)(&x),sizeof(nodoaux));
-		//if(arch_lee.eof())
-		//	break;
-		L.i_autor(x.autor1,x.a_n1,x.a_m1,x.libro_destacado1,x.libros_a1);
-		cin>>cant;
-		for(int i = 0; i < cant ; i++){
+		if(arch_lee.good())
+			break;
+		h_sub = NULL;
+		L.i_autor(x.autor1,x.a_n1,x.a_m1,x.libro_destacado1,x.libros_a1,h_sub);
+		for(int i = 0; i < x.libros_a1 ; i++){
 			arch_lee.read((char *)(&y),sizeof(libroaux));
-			L.i_libro(y.nombre_libro1,y.a_estreno1,y.pag1,y.genero1,y.premios_ganados1);
+			h_sub = i_libro(y.nombre_libro1,y.a_estreno1,y.pag1,y.genero1,y.premios_ganados1,h_sub);
 		}
 	}
 	arch_lee.close();
